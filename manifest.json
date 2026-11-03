@@ -1,0 +1,55 @@
+{
+  "manifest_version": 3,
+  "name": "Bahria Student Companion",
+  "version": "0.1.3",
+  "author": "Sami",
+  "description": "Assignments, attendance, lecture downloads, grade planning and session status for Bahria students.",
+  "permissions": [
+    "storage",
+    "alarms",
+    "notifications",
+    "downloads"
+  ],
+  "host_permissions": [
+    "https://lms.bahria.edu.pk/*",
+    "https://cms.bahria.edu.pk/*"
+  ],
+  "background": {
+    "scripts": [
+      "core.js",
+      "parsers.js",
+      "downloads.js",
+      "background.js"
+    ]
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Bahria Student Companion"
+  },
+  "icons": {
+    "128": "icon.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://lms.bahria.edu.pk/*",
+        "https://cms.bahria.edu.pk/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "bahria-student-companion@sami.extensions",
+      "strict_min_version": "140.0",
+      "data_collection_permissions": {
+        "required": [
+          "none"
+        ]
+      }
+    }
+  }
+}

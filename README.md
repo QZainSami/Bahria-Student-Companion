@@ -1,4 +1,4 @@
-# Bahria Student Companion — 0.1.3 testing build
+# Bahria Student Companion — 0.1.4 testing build
 
 One Firefox extension for LMS assignments, CMS attendance, lecture downloads, grade planning and portal session status.
 
@@ -66,3 +66,24 @@ If this source folder is already loaded as a temporary extension, click Reload b
 - List refreshes no longer affect the selection being processed. Closing the popup does not own or control the loop.
 - Shows batch progress and reports individual failures; a failed file does not stop the remaining selections.
 - 23 automated tests pass, including three-file batches, continuation after a failure, and changes to the original selection during processing. Live Firefox download testing is still required.
+
+
+## 0.1.4 — lecture downloads, sync progress and popup memory
+
+- Refreshes encoded, dated LMS file links from their course page before download. Multiple selected files from a course reuse one fresh page request per batch. Does not alter signed/encoded tokens by inventing a new date.
+- Uses Firefox's native download manager for LMS Download.php links with known original extensions, and sends the course page as referrer. Lecture number, topic and original file type are retained in the saved name.
+- Recognizes files by stable token metadata across scans, so a new day's URL does not mark every existing lecture as new again.
+- Retains the selected semester while scanning course pages and avoids double-encoding semester values.
+- Adds Download all for the currently selected course. Uses the background batch queue and continues after individual failures.
+- Shows course-by-course progress for assignments and lecture scans (for example, Syncing 2/8 — AI Lab). Removes the startup 0/0 download message and keeps download notices in the Lecture files section.
+- Manual attendance refresh opens/focuses the CMS portal when CMS returns an expired/login page. Cached attendance is kept. LMS and CMS sessions are handled independently; the extension does not attempt to keep CMS logged in.
+- Background page-fetch network failures retry inside an open portal tab when possible.
+- Remembers the last section and lecture course. Selected lecture checkboxes survive background status updates while the popup stays open.
+- Renames Mark all seen to Clear new labels; applies to the selected course only. It never deletes files or marks them downloaded.
+- No survey autofill is included. The grade planner still uses manual marks and weights.
+
+### Updating
+Extract the new package or use the updated source folder, reload the extension, then sync assignments and scan lectures once. Grant the added tabs and scripting permissions when prompted; they support portal-tab requests and CMS login navigation. The extension ID is unchanged, so existing plans and cached data remain available.
+
+### Validation
+38 automated checks pass, including sanitized table fixtures derived from the supplied AI Lab lecture and assignment HTML, progress from 1/8 to 8/8, native .docx downloads, fresh dated links, expired CMS login navigation, popup section/course persistence and selected-course Download all. All JavaScript syntax checks pass. UI tests use a DOM model and network/download APIs are simulated; live Firefox/Zen portal verification is still required. The original private page sources are not included in the package.

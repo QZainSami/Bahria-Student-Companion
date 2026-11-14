@@ -1,14 +1,16 @@
 {
   "manifest_version": 3,
   "name": "Bahria Student Companion",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "author": "Sami",
   "description": "Assignments, attendance, lecture downloads, grade planning and session status for Bahria students.",
   "permissions": [
     "storage",
     "alarms",
     "notifications",
-    "downloads"
+    "downloads",
+    "tabs",
+    "scripting"
   ],
   "host_permissions": [
     "https://lms.bahria.edu.pk/*",

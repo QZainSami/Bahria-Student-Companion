@@ -137,9 +137,9 @@ function downloadLinks(container, base) {
     try {
       const url=Core.portalUrl(new URL(a.getAttribute('href'),base).href,'lms.bahria.edu.pk');
       const path=new URL(url).pathname;
-      let filename=decodeURIComponent(path.split('/').pop()||'file');
+      let filename=Core.fileToken(url)?.original||decodeURIComponent(path.split('/').pop()||'file');
       if (!/\.[a-z0-9]{1,8}$/i.test(filename)) filename=a.getAttribute('download')||filename;
-      return [{url,filename:Core.segment(filename),title:a.textContent.trim()||filename}];
+      return [{url,filename:Core.segment(filename),sourcePage:base,title:a.textContent.trim()||filename}];
     } catch { return []; }
   });
 }
@@ -159,4 +159,12 @@ function parseLectureFiles(doc, base, course) {
     unique.forEach((f,i)=>files.push({...f,course,lectureNumber:number,part:unique.length>1?Core.letters(i):'',title:topic||f.title}));
   }
   return files;
+}
+
+function coursePageUrl(base,doc,courseId) {
+ const url=new URL(base),semester=doc.querySelector('#semesterId');
+ const decode=value=>{try{return decodeURIComponent(value);}catch{return value;}};
+ if(semester?.value)url.searchParams.set('s',decode(semester.value));
+ if(courseId)url.searchParams.set('oc',decode(courseId));
+ return url;
 }

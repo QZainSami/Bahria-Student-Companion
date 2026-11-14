@@ -1,0 +1,338 @@
+[
+  [
+    {
+      "text": "1",
+      "anchors": [],
+      "labels": []
+    },
+    {
+      "text": "Introduction to Python",
+      "anchors": [],
+      "labels": []
+    },
+    {
+      "text": "1. Download Lecture",
+      "anchors": [
+        {
+          "href": "Download.php?k=MSwyMDI2LTExLTE0LExlY3R1cmUsMCxBSS0tTGFiMS0xMjA5MjAyNC0wMTMyNDBwbS0wNTA5MjAyNi0xMTU2MzRhbS5wcHR4LGxtcy5iYWhyaWEuZWR1LnBrL1N0dWRlbnQvTGVjdHVyZU5vdGVzLnBocD9zPXNlbWVzdGVyJm9jPWNvdXJzZQ%3D%3D",
+          "text": "Download Lecture"
+        }
+      ],
+      "labels": [
+        {
+          "class": "label label-info",
+          "text": "\n                                                       Download Lecture "
+        }
+      ]
+    },
+    {
+      "text": "",
+      "anchors": [],
+      "labels": []
+    },
+    {
+      "text": "",
+      "anchors": [],
+      "labels": []
+    },
+    {
+      "text": "",
+      "anchors": [],
+      "labels": []
+    }
+  ],
+  [
+    {
+      "text": "2",
+      "anchors": [],
+      "labels": []
+    },
+    {
+      "text": "Python Array",
+      "anchors": [],
+      "labels": []
+    },
+    {
+      "text": "1. Download Lecture",
+      "anchors": [
+        {
+          "href": "Download.php?k=MSwyMDI2LTExLTE0LExlY3R1cmUsMCxBSS0tTGFiMi0tMTYwOTIwMjQtMDkyMzI5YW0tMTAwOTIwMjYtMDkxNTQ5cG0ucHB0eCxsbXMuYmFocmlhLmVkdS5way9TdHVkZW50L0xlY3R1cmVOb3Rlcy5waHA%2Fcz1zZW1lc3RlciZvYz1jb3Vyc2U%3D",
+          "text": "Download Lecture"
+        }
+      ],
+      "labels": [
+        {
+          "class": "label label-info",
+          "text": "\n                                                       Download Lecture "
+        }
+      ]
+    },
+    {
+      "text": "",
+      "anchors": [],
+      "labels": []
+    },
+    {
+      "text": "",
+      "anchors": [],
+      "labels": []
+    },
+    {
+      "text": "",
+      "anchors": [],
+      "labels": []
+    }
+  ],
+  [
+    {
+      "text": "3",
+      "anchors": [],
+      "labels": []
+    },
+    {
+      "text": "Functions, Recursion and OOP",
+      "anchors": [],
+      "labels": []
+    },
+    {
+      "text": "1. Download Lecture",
+      "anchors": [
+        {
+          "href": "Download.php?k=MSwyMDI2LTExLTE0LExlY3R1cmUsMCxBSS0tTGFiMy0yMzA5MjAyNC0xMDI0MzRhbS0yMjA5MjAyNi0xMDM5MTBwbS5wcHR4LGxtcy5iYWhyaWEuZWR1LnBrL1N0dWRlbnQvTGVjdHVyZU5vdGVzLnBocD9zPXNlbWVzdGVyJm9jPWNvdXJzZQ%3D%3D",
+          "text": "Download Lecture"
+        }
+      ],
+      "labels": [
+        {
+          "class": "label label-info",
+          "text": "\n                                                       Download Lecture "
+        }
+      ]
+    },
+    {
+      "text": "",
+      "anchors": [],
+      "labels": []
+    },
+    {
+      "text": "",
+      "anchors": [],
+      "labels": []
+    },
+    {
+      "text": "",
+      "anchors": [],
+      "labels": []
+    }
+  ],
+  [
+    {
+      "text": "4",
+      "anchors": [],
+      "labels": []
+    },
+    {
+      "text": "BFS and DFS",
+      "anchors": [],
+      "labels": []
+    },
+    {
+      "text": "1. Download Lecture",
+      "anchors": [
+        {
+          "href": "Download.php?k=MSwyMDI2LTExLTE0LExlY3R1cmUsMCxBSS0tTGFiNC0zMDA5MjAyNC0xMDUxMTFhbS0yMjA5MjAyNi0xMDQwNDJwbS5wcHR4LGxtcy5iYWhyaWEuZWR1LnBrL1N0dWRlbnQvTGVjdHVyZU5vdGVzLnBocD9zPXNlbWVzdGVyJm9jPWNvdXJzZQ%3D%3D",
+          "text": "Download Lecture"
+        }
+      ],
+      "labels": [
+        {
+          "class": "label label-info",
+          "text": "\n                                                       Download Lecture "
+        }
+      ]
+    },
+    {
+      "text": "",
+      "anchors": [],
+      "labels": []
+    },
+    {
+      "text": "",
+      "anchors": [],
+      "labels": []
+    },
+    {
+      "text": "",
+      "anchors": [],
+      "labels": []
+    }
+  ],
+  [
+    {
+      "text": "5",
+      "anchors": [],
+      "labels": []
+    },
+    {
+      "text": "Lab 5: Greedy and A* Search Algorithm (CLO:1, PLO:5, BT Level: P3)",
+      "anchors": [],
+      "labels": []
+    },
+    {
+      "text": "1. Download Lecture",
+      "anchors": [
+        {
+          "href": "Download.php?k=MSwyMDI2LTExLTE0LExlY3R1cmUsMCxBSS0tTGFiNS1MZWN0dXJlcy0zMDA5MjAyNi0wMjAxNDVwbS5wZGYsbG1zLmJhaHJpYS5lZHUucGsvU3R1ZGVudC9MZWN0dXJlTm90ZXMucGhwP3M9c2VtZXN0ZXImb2M9Y291cnNl",
+          "text": "Download Lecture"
+        }
+      ],
+      "labels": [
+        {
+          "class": "label label-info",
+          "text": "\n                                                       Download Lecture "
+        }
+      ]
+    },
+    {
+      "text": "",
+      "anchors": [],
+      "labels": []
+    },
+    {
+      "text": "",
+      "anchors": [],
+      "labels": []
+    },
+    {
+      "text": "",
+      "anchors": [],
+      "labels": []
+    }
+  ],
+  [
+    {
+      "text": "6",
+      "anchors": [],
+      "labels": []
+    },
+    {
+      "text": "Lab 6: Genetic Algorithm (CLO:1, PLO:5, BT Level: P3)",
+      "anchors": [],
+      "labels": []
+    },
+    {
+      "text": "1. Download Lecture",
+      "anchors": [
+        {
+          "href": "Download.php?k=MSwyMDI2LTExLTE0LExlY3R1cmUsMCxBSS0tTGFiNi1MZWN0dXJlcy0wODEwMjAyNi0xMDUzMDlhbS5wZGYsbG1zLmJhaHJpYS5lZHUucGsvU3R1ZGVudC9MZWN0dXJlTm90ZXMucGhwP3M9c2VtZXN0ZXImb2M9Y291cnNl",
+          "text": "Download Lecture"
+        }
+      ],
+      "labels": [
+        {
+          "class": "label label-info",
+          "text": "\n                                                       Download Lecture "
+        }
+      ]
+    },
+    {
+      "text": "",
+      "anchors": [],
+      "labels": []
+    },
+    {
+      "text": "",
+      "anchors": [],
+      "labels": []
+    },
+    {
+      "text": "",
+      "anchors": [],
+      "labels": []
+    }
+  ],
+  [
+    {
+      "text": "7",
+      "anchors": [],
+      "labels": []
+    },
+    {
+      "text": "Lab 7: Data Analysis (CLO:1, PLO:5, BT Level: P3)",
+      "anchors": [],
+      "labels": []
+    },
+    {
+      "text": "1. Download Lecture",
+      "anchors": [
+        {
+          "href": "Download.php?k=MSwyMDI2LTExLTE0LExlY3R1cmUsMCxBSS0tTGFiNy1MZWN0dXJlcy0xNDEwMjAyNi0wNjUzMTRwbS5wZGYsbG1zLmJhaHJpYS5lZHUucGsvU3R1ZGVudC9MZWN0dXJlTm90ZXMucGhwP3M9c2VtZXN0ZXImb2M9Y291cnNl",
+          "text": "Download Lecture"
+        }
+      ],
+      "labels": [
+        {
+          "class": "label label-info",
+          "text": "\n                                                       Download Lecture "
+        }
+      ]
+    },
+    {
+      "text": "",
+      "anchors": [],
+      "labels": []
+    },
+    {
+      "text": "",
+      "anchors": [],
+      "labels": []
+    },
+    {
+      "text": "",
+      "anchors": [],
+      "labels": []
+    }
+  ],
+  [
+    {
+      "text": "8",
+      "anchors": [],
+      "labels": []
+    },
+    {
+      "text": "Lab 8: Decision Tree and Linear Regression (CLO:2, PLO:2, BT Level: C3)",
+      "anchors": [],
+      "labels": []
+    },
+    {
+      "text": "1. Download Lecture",
+      "anchors": [
+        {
+          "href": "Download.php?k=MSwyMDI2LTExLTE0LExlY3R1cmUsMCxBSS0tTGFiOC1MZWN0dXJlcy0wNTExMjAyNi0xMjQ0MzZhbS5wZGYsbG1zLmJhaHJpYS5lZHUucGsvU3R1ZGVudC9MZWN0dXJlTm90ZXMucGhwP3M9c2VtZXN0ZXImb2M9Y291cnNl",
+          "text": "Download Lecture"
+        }
+      ],
+      "labels": [
+        {
+          "class": "label label-info",
+          "text": "\n                                                       Download Lecture "
+        }
+      ]
+    },
+    {
+      "text": "",
+      "anchors": [],
+      "labels": []
+    },
+    {
+      "text": "",
+      "anchors": [],
+      "labels": []
+    },
+    {
+      "text": "",
+      "anchors": [],
+      "labels": []
+    }
+  ]
+]

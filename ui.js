@@ -1,6 +1,8 @@
 const $=id=>document.getElementById(id);
 const node=(tag,text,cls)=>{const n=document.createElement(tag);if(text!=null)n.textContent=text;if(cls)n.className=cls;return n;};
-let snapshot={},plans=[],planId=null;
+let snapshot={},plans=[],planId=null,activeTab='assignments';
+const selectedLectures=new Set();
+const selectionKey=f=>f.course+'|'+Core.fileIdentity(f.url);
 if(location.pathname.endsWith('popup.html'))document.body.classList.add('popup');
 function tell(message){$('notice').textContent=message;}
 async function request(m){const r=await browser.runtime.sendMessage(m);if(!r?.ok)throw Error(r?.error||'The background task did not respond.');return r;}
@@ -9,8 +11,9 @@ function stamp(ms){return ms?new Date(ms).toLocaleString():'Not synced yet';}
 function link(url,text){const a=node('a',text);try{a.href=Core.portalUrl(url);}catch{return node('span',text);}a.target='_blank';a.rel='noreferrer';return a;}
 function render(){
  const batch=snapshot.lectureBatch;
- $('download-selected').disabled=!!batch?.busy;
- $('download-selected').textContent=batch?.busy?`Downloading ${batch.processed+1}/${batch.total}…`:'Download selected';
+ for(const id of ['download-selected','download-all'])$(id).disabled=!!batch?.busy;
+ $('download-selected').textContent=batch?.busy?`Downloading ${Math.min(batch.processed+1,batch.total)}/${batch.total}…`:'Download selected';
+ renderStatus();
  const pending=Core.pending(snapshot.assignments||[]);$('summary').textContent=pending.length+' pending · '+(snapshot.files||[]).filter(f=>f.isNew).length+' new files';
  $('lms-time').textContent='Last sync: '+stamp(snapshot.lmsSynced);$('cms-time').textContent='Target: 75% · Last sync: '+stamp(snapshot.cmsSynced);
  for(const kind of ['lms','cms','files']){const job=snapshot[kind+'Job'];$(kind+'-error').textContent=job?.error||'';document.querySelector('[data-sync='+kind+']').disabled=!!job?.busy;}
@@ -43,7 +46,7 @@ function render(){
  const sessions=$('sessions');sessions.replaceChildren();for(const portal of ['lms','cms']){const s=snapshot[portal+'Session'];const c=node('article',null,'card');c.append(node('h3',portal.toUpperCase()),node('span',s?.state||'Not checked','pill'+(s?.state==='expired'?' danger':'')),node('p',s?.message||'Check your current login session.'),node('p','Checked: '+stamp(s?.checked),'muted'),link('https://'+portal+'.bahria.edu.pk/','Open '+portal.toUpperCase()+' ↗'));sessions.append(c);}
 }
 function renderFiles(){
- const list=$('file-list'),select=$('file-course'),previous=select.value;
+ const list=$('file-list'),select=$('file-course'),previous=select.value||snapshot.view?.course;
  const names=[...new Set([...(snapshot.courses||[]).map(c=>c.name),...(snapshot.files||[]).map(f=>f.course)])];
  select.replaceChildren();for(const name of names){const o=node('option',name);o.value=name;select.append(o);}
  if(names.includes(previous))select.value=previous;
@@ -52,7 +55,7 @@ function renderFiles(){
  if(!files.length){empty(list,names.length?'No lecture files found for this course.':'Scan lecture files to populate your courses.');return;}
  list.append(node('h3',select.value,'course-heading'));
  for(const [index,f] of files.entries()){
-  const row=node('article',null,'card file'),check=node('input');check.type='checkbox';check.dataset.url=f.url;check.dataset.course=f.course;
+  const row=node('article',null,'card file'),check=node('input');check.type='checkbox';check.dataset.url=f.url;check.dataset.course=f.course;check.checked=selectedLectures.has(selectionKey(f));check.onchange=()=>{if(check.checked)selectedLectures.add(selectionKey(f));else selectedLectures.delete(selectionKey(f));};
   const label=f.lectureNumber?f.lectureNumber+(f.part?' '+f.part:''):String(index+1);
   check.setAttribute('aria-label','Select lecture '+label+' '+f.title);
   const info=node('div',null,'details');info.append(node('h3',f.title),node('span',f.downloaded?'Downloaded':f.isNew?'New':'Available','file-status'));
@@ -61,22 +64,40 @@ function renderFiles(){
  }
 }
 async function load(){snapshot=await browser.storage.local.get(null);render();}
-document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('.panel').forEach(p=>p.hidden=p.id!==b.dataset.tab);document.querySelectorAll('[data-tab]').forEach(t=>t.classList.toggle('selected',t===b));});
+function saveView(){return browser.storage.local.set({view:{tab:activeTab,course:$('file-course').value}});}
+function setTab(tab,persist=true){
+ if(!['assignments','attendance','files','grades','settings'].includes(tab))tab='assignments';
+ activeTab=tab;document.querySelectorAll('.panel').forEach(p=>p.hidden=p.id!==tab);
+ document.querySelectorAll('[data-tab]').forEach(t=>t.classList.toggle('selected',t.dataset.tab===tab));
+ renderStatus();if(persist)saveView().catch(e=>tell(e.message));
+}
+function renderStatus(){
+ const kind={assignments:'lms',attendance:'cms',files:'files'}[activeTab];
+ const job=snapshot[kind+'Job'];
+ if(job?.busy){tell(job.total?`Syncing ${job.current}/${job.total} — ${job.course}`:'Connecting to '+(kind==='cms'?'CMS':'LMS')+'…');return;}
+ if(job?.error){tell(job.error);return;}
+ const batch=snapshot.lectureBatch;
+ if(activeTab==='files'&&batch?.total>0){if(batch.interrupted){tell('Download batch was interrupted. Select the remaining lectures to retry.');return;}tell(batch.busy?`Downloading lectures: ${batch.processed}/${batch.total} processed…`:`${batch.started}/${batch.total} downloads started.`+(batch.failures.length?` ${batch.failures.length} failed: ${batch.failures[0].error}`:''));return;}
+ if(job?.count!=null){tell(`Synced ${job.count} records.`);return;}
+ tell('');
+}
+document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
 document.querySelectorAll('[data-sync]').forEach(b=>b.onclick=async()=>{b.disabled=true;tell('Syncing in the background…');try{const r=await request({type:'sync',kind:b.dataset.sync});tell('Synced '+r.count+' records.');}catch(e){tell(e.message);}finally{await load();}});
 $('expand').onclick=()=>browser.tabs.create({url:browser.runtime.getURL('dashboard.html')});
-$('file-course').onchange=renderFiles;
-$('download-selected').onclick=async()=>{
- // Snapshot values, never keep live checkbox elements in an async download loop.
- const files=[...$('file-list').querySelectorAll('input:checked')].map(f=>({url:f.dataset.url,course:f.dataset.course}));
- if(!files.length)return tell('Select files to download first.');
- $('download-selected').disabled=true;
- tell(`Starting ${files.length} downloads in the background…`);
+$('file-course').onchange=()=>{renderFiles();saveView().catch(e=>tell(e.message));};
+async function startLectureBatch(files){
+ if(!files.length)return tell('No lecture files selected for this course.');
+ $('download-selected').disabled=true;$('download-all').disabled=true;
+ tell(`Starting ${files.length} lecture downloads…`);
  try{
-  const result=await request({type:'download_batch',files});
+  const result=await request({type:'download_batch',files:files.map(f=>({url:f.url,course:f.course}))});
   tell(`${result.started}/${result.total} downloads started.`+(result.failures.length?` ${result.failures.length} failed: ${result.failures[0].error}`:''));
  }catch(e){tell(e.message);}finally{await load();}
-};
-$('mark-seen').onclick=()=>browser.storage.local.set({files:(snapshot.files||[]).map(f=>({...f,isNew:false}))});
+}
+$('download-selected').onclick=()=>startLectureBatch((snapshot.files||[]).filter(f=>f.course===$('file-course').value&&selectedLectures.has(selectionKey(f))));
+$('download-all').onclick=()=>startLectureBatch((snapshot.files||[]).filter(f=>f.course===$('file-course').value));
+$('mark-seen').title='Clear New labels for this course. Files and downloads are unchanged.';
+$('mark-seen').onclick=()=>browser.storage.local.set({files:(snapshot.files||[]).map(f=>f.course===$('file-course').value?{...f,isNew:false}:f)});
 $('check-sessions').onclick=async()=>{tell('Checking sessions…');try{await request({type:'sessions'});await load();tell('Session check complete.');}catch(e){tell(e.message);}};
 $('save-settings').onclick=async()=>{try{const url=$('lecture-url').value.trim();if(url)Core.portalUrl(url,'lms.bahria.edu.pk');await request({type:'settings',value:{autoSync:$('auto-sync').checked,reminders:$('reminders').checked,lectureUrl:url}});tell('Settings saved.');}catch(e){tell(e.message);}};
 function rows(){return [...$('grade-rows').children].map(tr=>Object.fromEntries([...tr.querySelectorAll('input')].map(i=>[i.dataset.field,i.value])));}
@@ -96,9 +117,5 @@ $('import').onchange=async()=>{try{const file=$('import').files[0];if(!file)retu
  for(const p of out.gradePlans||[]){if(typeof p.id!=='string'||typeof p.name!=='string'||!Array.isArray(p.rows))throw Error('Invalid grade plan.');Core.grades(p.rows,p.target);}
  if(data.settings){const v=data.settings;if(typeof v.autoSync!=='boolean'||typeof v.reminders!=='boolean')throw Error('Invalid settings.');if(v.lectureUrl)Core.portalUrl(v.lectureUrl,'lms.bahria.edu.pk');out.settings={autoSync:v.autoSync,reminders:v.reminders,lectureUrl:v.lectureUrl||''};}for(const k of ['lmsSynced','cmsSynced','filesSynced'])if(Number.isFinite(data[k]))out[k]=data[k];if(!Object.keys(out).length)throw Error('No supported data found.');if(!confirm('Replace the matching local data with this backup?'))return;await browser.storage.local.set(out);plans=out.gradePlans||plans;newPlan();tell('Import complete.');}catch(e){tell('Import failed: '+e.message);}finally{$('import').value='';}};
 $('clear-data').onclick=async()=>{if(confirm('Delete all Companion data, including grade plans? Export a backup first if needed.')){await browser.storage.local.clear();plans=[];newPlan();await load();tell('Local data cleared.');}};
-browser.storage.onChanged.addListener(changes=>{
- load().catch(e=>tell(e.message));
- const batch=changes.lectureBatch?.newValue;
- if(batch)tell(batch.busy?`Downloading selected lectures: ${batch.processed}/${batch.total} processed…`:`${batch.started}/${batch.total} downloads started.`+(batch.failures.length?` ${batch.failures.length} failed: ${batch.failures[0].error}`:''));
-});
-(async()=>{await load();plans=snapshot.gradePlans||[];const s={autoSync:true,reminders:true,...snapshot.settings};$('auto-sync').checked=s.autoSync;$('reminders').checked=s.reminders;$('lecture-url').value=s.lectureUrl||snapshot.discoveredLectureUrl||'';newPlan();})().catch(e=>tell(e.message));
+browser.storage.onChanged.addListener(()=>{load().catch(e=>tell(e.message));});
+(async()=>{await load();setTab(snapshot.view?.tab||'assignments',false);plans=snapshot.gradePlans||[];const s={autoSync:true,reminders:true,...snapshot.settings};$('auto-sync').checked=s.autoSync;$('reminders').checked=s.reminders;$('lecture-url').value=s.lectureUrl||snapshot.discoveredLectureUrl||'';newPlan();})().catch(e=>tell(e.message));

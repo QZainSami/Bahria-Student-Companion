@@ -35,6 +35,18 @@ const Core = (() => {
     for(let n=index+1;n>0;n=Math.floor((n-1)/26))label=String.fromCharCode(65+(n-1)%26)+label;
     return label;
   }
-  return {segment,portalUrl,grades,pending,letters};
+  function fileToken(url) {
+    try {
+      const k=new URL(url).searchParams.get('k');if(!k)return null;
+      const fields=atob(k.replace(/ /g,'+').replace(/-/g,'+').replace(/_/g,'/')).split(',');
+      if(fields.length<6)return null;
+      const original=fields.slice(4,-1).join(',');
+      let source=fields.at(-1);if(!/^https?:/i.test(source))source='https://'+source;
+      return {date:fields[1],original,key:[fields[2],fields[3],original].join('|'),source:portalUrl(source,'lms.bahria.edu.pk')};
+    }catch{return null;}
+  }
+  function fileIdentity(url){return fileToken(url)?.key||url;}
+  return {segment,portalUrl,grades,pending,letters,fileToken,fileIdentity};
+
 })();
 if (typeof module !== 'undefined') module.exports=Core;

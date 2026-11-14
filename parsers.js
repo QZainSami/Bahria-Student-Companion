@@ -78,9 +78,8 @@ function parseTableRows(rows, courseName, pageUrl) {
 }
 
 
-function parseAttendance(htmlString) {
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(htmlString, 'text/html');
+function parseAttendance(input) {
+  const doc = typeof input === 'string' ? new DOMParser().parseFromString(input, 'text/html') : input;
   const tables = Array.from(doc.querySelectorAll('table'));
   const attendanceTable = tables.find(t => t.textContent.includes('Present Hours'));
   
@@ -99,7 +98,7 @@ function parseAttendance(htmlString) {
       const absentHours = parseFloat(cols[10]?.textContent.trim()) || 0;
       const totalHours = parseFloat(cols[11]?.textContent.trim()) || 0;
 
-      if (courseName && presentColText.includes(':')) {
+      if (courseName && /^\d+(?:\.\d+)?(?:\s*:\s*\d{1,2})?$/.test(presentColText)) {
         const attended = parseFloat(presentColText.split(':')[0].trim());
         const isLab = courseName.toLowerCase().includes('lab') || courseCode.toUpperCase().startsWith('CSL');
 

@@ -38,15 +38,21 @@ const Core = (() => {
   function fileToken(url) {
     try {
       const k=new URL(url).searchParams.get('k');if(!k)return null;
-      const fields=atob(k.replace(/ /g,'+').replace(/-/g,'+').replace(/_/g,'/')).split(',');
+      let raw=k.replace(/ /g,'+').replace(/-/g,'+').replace(/_/g,'/');
+      while(raw.length%4)raw+='=';
+      const fields=atob(raw).split(',');
       if(fields.length<6)return null;
       const original=fields.slice(4,-1).join(',');
       let source=fields.at(-1);if(!/^https?:/i.test(source))source='https://'+source;
       return {date:fields[1],original,key:[fields[2],fields[3],original].join('|'),source:portalUrl(source,'lms.bahria.edu.pk')};
     }catch{return null;}
   }
+  function gradeRows(rows) {
+    const blank=v=>v==null||String(v).trim()==='';
+    return rows.filter(r=>!(blank(r.weight)&&blank(r.score)&&(blank(r.max)||Number(r.max)===100)));
+  }
   function fileIdentity(url){return fileToken(url)?.key||url;}
-  return {segment,portalUrl,grades,pending,letters,fileToken,fileIdentity};
+  return {segment,portalUrl,grades,pending,letters,fileToken,fileIdentity,gradeRows};
 
 })();
 if (typeof module !== 'undefined') module.exports=Core;

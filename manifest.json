@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Bahria Student Companion",
-  "version": "0.1.4",
+  "version": "0.1.7",
   "author": "Sami",
   "description": "Assignments, attendance, lecture downloads, grade planning and session status for Bahria students.",
   "permissions": [
@@ -21,6 +21,7 @@
       "core.js",
       "parsers.js",
       "downloads.js",
+      "surveys.js",
       "background.js"
     ]
   },
@@ -39,6 +40,16 @@
       ],
       "js": [
         "content.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://cms.bahria.edu.pk/*"
+      ],
+      "js": [
+        "survey-answers.js",
+        "survey-agent.js"
       ],
       "run_at": "document_idle"
     }

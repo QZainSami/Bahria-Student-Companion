@@ -56,16 +56,7 @@ const FileDownload = (() => {
    return {ok:true,status:200,url:result.url,headers:{get:name=>name.toLowerCase()==='content-type'?result.mime:name.toLowerCase()==='content-disposition'?result.disposition:null},blob:async()=>new Blob([bytes])};
   }
  }
- function tokenExtension(url) {
-  try {
-   const token=new URL(url).searchParams.get('k');
-   if(!token)return '';
-   // LMS token: record,date,kind,index,original filename,return page.
-   // Read the filename only; never construct URLs from token contents.
-   const fields=atob(token.replace(/-/g,'+').replace(/_/g,'/')).split(',');
-   return ext(fields[4]||'');
-  }catch{return '';}
- }
+ function tokenExtension(url) { return ext(Core.fileToken(url)?.original||''); }
  async function start(file,title,folder){
   const nativeExtension=tokenExtension(file.url);
   if(nativeExtension){

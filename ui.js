@@ -10,6 +10,10 @@ function empty(parent,text){parent.replaceChildren(node('div',text,'empty'));}
 function stamp(ms){return ms?new Date(ms).toLocaleString():'Not synced yet';}
 function link(url,text){const a=node('a',text);try{a.href=Core.portalUrl(url);}catch{return node('span',text);}a.target='_blank';a.rel='noreferrer';return a;}
 function render(){
+ const survey=snapshot.surveyJob;
+ $('survey-start').disabled=!!survey?.running;
+ $('survey-stop').disabled=!survey?.running;
+ $('survey-status').textContent=survey?.message||'Ready. Log in to CMS before starting.';
  const batch=snapshot.lectureBatch;
  for(const id of ['download-selected','download-all'])$(id).disabled=!!batch?.busy;
  $('download-selected').textContent=batch?.busy?`Downloading ${Math.min(batch.processed+1,batch.total)}/${batch.total}…`:'Download selected';
@@ -66,12 +70,13 @@ function renderFiles(){
 async function load(){snapshot=await browser.storage.local.get(null);render();}
 function saveView(){return browser.storage.local.set({view:{tab:activeTab,course:$('file-course').value}});}
 function setTab(tab,persist=true){
- if(!['assignments','attendance','files','grades','settings'].includes(tab))tab='assignments';
+ if(!['assignments','attendance','files','grades','surveys','settings'].includes(tab))tab='assignments';
  activeTab=tab;document.querySelectorAll('.panel').forEach(p=>p.hidden=p.id!==tab);
  document.querySelectorAll('[data-tab]').forEach(t=>t.classList.toggle('selected',t.dataset.tab===tab));
  renderStatus();if(persist)saveView().catch(e=>tell(e.message));
 }
 function renderStatus(){
+ if(activeTab==='surveys'){tell(snapshot.surveyJob?.message||'');return;}
  const kind={assignments:'lms',attendance:'cms',files:'files'}[activeTab];
  const job=snapshot[kind+'Job'];
  if(job?.busy){tell(job.total?`Syncing ${job.current}/${job.total} — ${job.course}`:'Connecting to '+(kind==='cms'?'CMS':'LMS')+'…');return;}
@@ -91,6 +96,8 @@ async function startLectureBatch(files){
  tell(`Starting ${files.length} lecture downloads…`);
  try{
   const result=await request({type:'download_batch',files:files.map(f=>({url:f.url,course:f.course}))});
+  const failed=new Set(result.failures.map(selectionKey));
+  for(const file of files)if(!failed.has(selectionKey(file)))selectedLectures.delete(selectionKey(file));
   tell(`${result.started}/${result.total} downloads started.`+(result.failures.length?` ${result.failures.length} failed: ${result.failures[0].error}`:''));
  }catch(e){tell(e.message);}finally{await load();}
 }
@@ -101,16 +108,17 @@ $('mark-seen').onclick=()=>browser.storage.local.set({files:(snapshot.files||[])
 $('check-sessions').onclick=async()=>{tell('Checking sessions…');try{await request({type:'sessions'});await load();tell('Session check complete.');}catch(e){tell(e.message);}};
 $('save-settings').onclick=async()=>{try{const url=$('lecture-url').value.trim();if(url)Core.portalUrl(url,'lms.bahria.edu.pk');await request({type:'settings',value:{autoSync:$('auto-sync').checked,reminders:$('reminders').checked,lectureUrl:url}});tell('Settings saved.');}catch(e){tell(e.message);}};
 function rows(){return [...$('grade-rows').children].map(tr=>Object.fromEntries([...tr.querySelectorAll('input')].map(i=>[i.dataset.field,i.value])));}
-function calculate(){try{const r=Core.grades(rows(),Number($('target').value));$('grade-result').textContent=`Earned ${r.earned.toFixed(1)} overall percentage points. Current average on graded work: ${r.current==null?'—':r.current.toFixed(1)+'%'}. ${r.remaining.toFixed(1)}% of the course remains. `+(r.needed==null?(r.possible?'Target reached.':'Target not reached.'):(r.possible?`Need an average of ${r.needed.toFixed(1)}% on the remaining weight.`:'Target is above the maximum possible with the entered marks.'))+(r.total<100?` You have allocated ${r.total}% of the course; the unallocated weight is included as remaining.`:'');}catch(e){$('grade-result').textContent=e.message;}}
+function calculate(){try{const inputs=Core.gradeRows(rows());if(!inputs.length){$('grade-result').textContent='Enter assessment weights and maximum marks to calculate your target.';return;}if(inputs.some(r=>r.weight===''||r.max==='')){$('grade-result').textContent='Complete the weight and maximum marks for each assessment you have started.';return;}const r=Core.grades(inputs,Number($('target').value));$('grade-result').textContent=`Earned ${r.earned.toFixed(1)} overall percentage points. Current average on graded work: ${r.current==null?'—':r.current.toFixed(1)+'%'}. ${r.remaining.toFixed(1)}% of the course remains. `+(r.needed==null?(r.possible?'Target reached.':'Target not reached.'):(r.possible?`Need an average of ${r.needed.toFixed(1)}% on the remaining weight.`:'Target is above the maximum possible with the entered marks.'))+(r.total<100?` You have allocated ${r.total}% of the course; the unallocated weight is included as remaining.`:'');}catch(e){$('grade-result').textContent=e.message;}}
 function addRow(r={name:'',weight:'',score:'',max:100}){const tr=node('tr');for(const field of ['name','weight','score','max']){const td=node('td'),input=node('input');input.type=field==='name'?'text':'number';input.value=r[field]??'';input.dataset.field=field;input.setAttribute('aria-label',field);if(field!=='name'){input.min=0;input.step='any';}input.oninput=calculate;td.append(input);tr.append(td);}const td=node('td'),remove=node('button','×');remove.setAttribute('aria-label','Remove assessment');remove.onclick=()=>{tr.remove();calculate();};td.append(remove);tr.append(td);$('grade-rows').append(tr);calculate();}
 function planOptions(){const select=$('grade-course');select.replaceChildren(node('option','Choose saved course'));select.firstChild.value='';for(const p of plans){const o=node('option',p.name);o.value=p.id;select.append(o);}select.value=planId||'';}
 function newPlan(){planId=null;$('course-name').value='';$('target').value=75;$('grade-rows').replaceChildren();for(const name of ['Assignments','Quizzes','Midterm','Final'])addRow({name,weight:'',score:'',max:100});planOptions();}
 $('new-plan').onclick=newPlan;$('add-row').onclick=()=>addRow();$('target').oninput=calculate;
 $('grade-course').onchange=()=>{const p=plans.find(p=>p.id===$('grade-course').value);if(!p)return;planId=p.id;$('course-name').value=p.name;$('target').value=p.target;$('grade-rows').replaceChildren();p.rows.forEach(addRow);calculate();};
-$('save-plan').onclick=async()=>{try{const name=$('course-name').value.trim();if(!name)throw Error('Enter a course name.');const r=rows();Core.grades(r,Number($('target').value));const p={id:planId||crypto.randomUUID(),name,target:Number($('target').value),rows:r};plans=plans.filter(x=>x.id!==p.id);plans.push(p);planId=p.id;await browser.storage.local.set({gradePlans:plans});planOptions();tell('Grade plan saved.');}catch(e){tell(e.message);}};
+$('save-plan').onclick=async()=>{try{const name=$('course-name').value.trim();if(!name)throw Error('Enter a course name.');const r=Core.gradeRows(rows());if(!r.length)throw Error('Enter at least one assessment with a weight and maximum marks.');Core.grades(r,Number($('target').value));const p={id:planId||crypto.randomUUID(),name,target:Number($('target').value),rows:r};plans=plans.filter(x=>x.id!==p.id);plans.push(p);planId=p.id;await browser.storage.local.set({gradePlans:plans});planOptions();tell('Grade plan saved.');}catch(e){tell(e.message);}};
 $('delete-plan').onclick=async()=>{if(!planId)return;if(!confirm('Delete this saved course plan?'))return;plans=plans.filter(p=>p.id!==planId);await browser.storage.local.set({gradePlans:plans});newPlan();};
-$('export').onclick=()=>{const allowed=['assignments','attendance','files','gradePlans','settings','lmsSynced','cmsSynced','filesSynced'];const data={format:'bahria-companion',version:1};for(const k of allowed)if(snapshot[k]!=null)data[k]=snapshot[k];const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=node('a');a.href=url;a.download='bahria-companion-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),10000);};
-$('import').onchange=async()=>{try{const file=$('import').files[0];if(!file)return;if(file.size>5000000)throw Error('Backup must be smaller than 5 MB.');const data=JSON.parse(await file.text()),out={};for(const k of ['assignments','attendance','files','gradePlans'])if(data[k]!=null){if(!Array.isArray(data[k]))throw Error('Invalid '+k+' list.');out[k]=data[k];}if(Array.isArray(data.attendanceData))out.attendance=data.attendanceData;
+$('export').onclick=()=>{const allowed=['assignments','attendance','files','gradePlans','courses','settings','lmsSynced','cmsSynced','filesSynced'];const data={format:'bahria-companion',version:1};for(const k of allowed)if(snapshot[k]!=null)data[k]=snapshot[k];const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=node('a');a.href=url;a.download='bahria-companion-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),10000);};
+$('import').onchange=async()=>{try{const file=$('import').files[0];if(!file)return;if(file.size>5000000)throw Error('Backup must be smaller than 5 MB.');const data=JSON.parse(await file.text()),out={};for(const k of ['assignments','attendance','files','gradePlans','courses'])if(data[k]!=null){if(!Array.isArray(data[k]))throw Error('Invalid '+k+' list.');out[k]=data[k];}if(Array.isArray(data.attendanceData))out.attendance=data.attendanceData;
+ for(const c of out.courses||[]){if(typeof c.name!=='string'||typeof c.id!=='string')throw Error('Invalid course.');}
  for(const a of out.assignments||[]){if(typeof a.title!=='string'||typeof a.course!=='string')throw Error('Invalid assignment.');if(a.link)Core.portalUrl(a.link);}
  for(const r of out.attendance||[]){if(typeof r.course!=='string'||!['percentage','attended','total','absent','absentLeft','maxAllowed'].every(k=>Number.isFinite(r[k])))throw Error('Invalid attendance record.');r.classesToRecover=Math.max(0,Math.ceil(3*r.total-4*r.attended));r.sessionsLeft=Math.floor(r.absentLeft/3);}
  for(const f of out.files||[]){Core.portalUrl(f.url,'lms.bahria.edu.pk');if(!['title','filename','course'].every(k=>typeof f[k]==='string'))throw Error('Invalid file.');}
@@ -119,3 +127,11 @@ $('import').onchange=async()=>{try{const file=$('import').files[0];if(!file)retu
 $('clear-data').onclick=async()=>{if(confirm('Delete all Companion data, including grade plans? Export a backup first if needed.')){await browser.storage.local.clear();plans=[];newPlan();await load();tell('Local data cleared.');}};
 browser.storage.onChanged.addListener(()=>{load().catch(e=>tell(e.message));});
 (async()=>{await load();setTab(snapshot.view?.tab||'assignments',false);plans=snapshot.gradePlans||[];const s={autoSync:true,reminders:true,...snapshot.settings};$('auto-sync').checked=s.autoSync;$('reminders').checked=s.reminders;$('lecture-url').value=s.lectureUrl||snapshot.discoveredLectureUrl||'';newPlan();})().catch(e=>tell(e.message));
+
+$('survey-start').onclick=async()=>{
+ $('survey-start').disabled=true;
+ try{await request({type:'survey_start',config:{rating:Number($('survey-rating').value)}});}
+ catch(e){tell(e.message);$('survey-status').textContent=e.message;}
+ finally{await load();}
+};
+$('survey-stop').onclick=async()=>{try{await request({type:'survey_stop'});await load();}catch(e){tell(e.message);}};

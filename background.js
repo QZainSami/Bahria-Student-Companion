@@ -1,6 +1,7 @@
 const LMS='https://lms.bahria.edu.pk/Student/Assignments.php';
 const CMS='https://cms.bahria.edu.pk/Sys/Student/ClassAttendance/StudentWiseAttendance.aspx';
 const jobs=new Map();
+let backgroundReady=Promise.resolve();
 const defaults={autoSync:true,reminders:true,lectureUrl:''};
 async function state(){return browser.storage.local.get(null);}
 async function settings(){return {...defaults,...(await state()).settings};}
@@ -47,7 +48,7 @@ async function syncLms(){
  return unique.length;
 }
 async function syncCms(){
- const {doc}=await page(CMS);const records=parseAttendance(doc.documentElement.outerHTML);
+ const {doc}=await page(CMS);const records=parseAttendance(doc);
  if(!records.length)throw Error('Attendance table not found. Previous attendance has been kept.');
  const attendance=records.map(r=>({...r,classesToRecover:Math.max(0,Math.ceil(3*r.total-4*r.attended)),sessionsLeft:Math.floor(r.absentLeft/3)}));
  await browser.storage.local.set({attendance,cmsSynced:Date.now()});return attendance.length;
@@ -93,8 +94,10 @@ async function checkSessions(){
  }
 }
 async function reminders(){
- const s=await state();if(!(await settings()).reminders)return;
- const shown=s.shown||{};
+ const s=await state();
+ const cutoff=Date.now()-14*86400000;
+ const shown=Object.fromEntries(Object.entries(s.shown||{}).filter(([,time])=>Number.isFinite(time)&&time>=cutoff));
+ if(!(await settings()).reminders){if(Object.keys(shown).length!==Object.keys(s.shown||{}).length)await browser.storage.local.set({shown});return;}
  for(const a of Core.pending(s.assignments||[])){
   const days=Math.ceil((Date.parse(a.deadline)-Date.now())/86400000);
   if(![0,1,2,3].includes(days))continue;
@@ -117,7 +120,7 @@ async function freshDownloadLink(file,cache){
  const result=await cache.get(source);
  const match=downloadLinks(result.doc,result.url).find(f=>Core.fileIdentity(f.url)===Core.fileIdentity(file.url));
  if(!match)throw Error('This file is no longer listed on LMS. Scan lecture files or sync assignments again.');
- return {...file,...match,referrer:result.url};
+ return {...file,...match,title:file.title||match.title,referrer:result.url};
 }
 let lectureBatch = null;
 async function downloadLectureBatch(selected, sender) {
@@ -140,11 +143,13 @@ async function downloadLectureBatch(selected, sender) {
 }
 async function handle(m,sender,downloadPages=new Map()){
  await backgroundReady;
+ if(typeof m?.type==='string'&&m.type.startsWith('survey_'))return SurveyRunner.message(m,sender);
  const internal=!sender.tab;
  if(m.type==='portal_open'){
-  const host=new URL(sender.tab?.url||sender.url).hostname;
+  let host;try{host=new URL(sender.tab?.url||sender.url).hostname;}catch{return {ok:true};}
   if(!['lms.bahria.edu.pk','cms.bahria.edu.pk'].includes(host))return;
   const kind=host.startsWith('lms')?'lms':'cms',s=await state();
+  if(s.surveyJob?.running&&s.surveyJob.tabId===sender.tab?.id)return {ok:true};
   if((await settings()).autoSync && Date.now()-(s[kind+'Synced']||0)>60000)await run(kind);
   return {ok:true};
  }
@@ -193,9 +198,18 @@ browser.alarms.onAlarm.addListener(a=>{if(a.name==='reminders')reminders().catch
 browser.runtime.onInstalled.addListener(async()=>{await browser.alarms.create('reminders',{periodInMinutes:180});});
 
 // Recover interrupted jobs without publishing a fake completed 0/0 batch.
-const backgroundReady=(async()=>{
+backgroundReady=(async()=>{
  const saved=await state(),updates={};
  for(const kind of ['lms','cms','files'])if(saved[kind+'Job']?.busy)updates[kind+'Job']={busy:false,error:'Sync interrupted. Please try again.'};
  if(saved.lectureBatch?.busy)updates.lectureBatch={...saved.lectureBatch,busy:false,interrupted:true};
  if(Object.keys(updates).length)await browser.storage.local.set(updates);
+ await refreshCachedBadge();
 })();
+
+async function refreshCachedBadge(){
+ if(!browser.action?.setBadgeText)return;
+ const saved=await state(),count=Core.pending(saved.assignments||[]).length;
+ await browser.action.setBadgeText({text:count?String(count):''});
+ if(browser.action.setBadgeBackgroundColor)await browser.action.setBadgeBackgroundColor({color:'#bd93f9'});
+}
+browser.runtime.onStartup?.addListener(()=>refreshCachedBadge().catch(console.error));

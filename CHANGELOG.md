@@ -1,3 +1,12 @@
+# Version 0.1.8
+
+- Fix attendance disappearing after clearing local data or installing on another device.
+- Accept CMS Present Hours values containing a percentage, such as `17.0 :70.83%`, alongside plain numbers and hours:minutes formats.
+- Recognize Present Hours headers containing line breaks or additional whitespace.
+- Clarify the error when no readable attendance records are found, while retaining cached data.
+- Add tests based on the supplied eight-course attendance page and a fresh sync with empty local storage.
+- No new permissions or dependencies.
+
 # Version 0.1.7
 
 - Fix blank Grade Planner templates: prompt until data is entered, ignore unused rows, retain weighted ungraded assessments, and reject partially entered rows on save.

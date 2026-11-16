@@ -78,10 +78,18 @@ function parseTableRows(rows, courseName, pageUrl) {
 }
 
 
+// CMS displays hours alone, hours:minutes, or hours : percentage (e.g. 17.0 :70.83%).
+function parsePresentHours(text) {
+  const match = String(text ?? '').trim().match(/^(\d+(?:\.\d+)?)\s*(?::\s*\d+(?:\.\d+)?\s*%?)?$/);
+  if (!match) return null;
+  const hours = Number(match[1]);
+  return Number.isFinite(hours) ? hours : null;
+}
+
 function parseAttendance(input) {
   const doc = typeof input === 'string' ? new DOMParser().parseFromString(input, 'text/html') : input;
   const tables = Array.from(doc.querySelectorAll('table'));
-  const attendanceTable = tables.find(t => t.textContent.includes('Present Hours'));
+  const attendanceTable = tables.find(t => /presenthours/i.test(t.textContent.replace(/\s+/g, '')));
   
   if (!attendanceTable) return [];
   
@@ -98,8 +106,8 @@ function parseAttendance(input) {
       const absentHours = parseFloat(cols[10]?.textContent.trim()) || 0;
       const totalHours = parseFloat(cols[11]?.textContent.trim()) || 0;
 
-      if (courseName && /^\d+(?:\.\d+)?(?:\s*:\s*\d{1,2})?$/.test(presentColText)) {
-        const attended = parseFloat(presentColText.split(':')[0].trim());
+      const attended = parsePresentHours(presentColText);
+      if (courseName && attended !== null) {
         const isLab = courseName.toLowerCase().includes('lab') || courseCode.toUpperCase().startsWith('CSL');
 
         let semesterTotalHours = creditHours === 2 ? 32 : 48;

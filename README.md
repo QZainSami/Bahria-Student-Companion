@@ -2,7 +2,7 @@
 
 A compact Firefox extension for Bahria University students: LMS assignments, CMS attendance, lecture downloads, grade planning, and survey autofill in one dashboard.
 
-**Version:** 0.1.7 · **Status:** Testing release · **License:** MIT
+**Version:** 0.1.8 · **Status:** Testing release · **License:** MIT
 
 Built for Firefox and Zen using Firefox engine **140 or newer**. This package does not support Chrome.
 
@@ -127,7 +127,7 @@ Run the automated tests with Node.js:
 node --test tests/*.test.cjs
 ```
 
-Version 0.1.7 passes **57 automated tests** and JavaScript syntax checks. Tests cover parsing, token edge cases, grade planning, backup round-trips, batch downloads, session handling, popup persistence, survey flow, and notification cleanup.
+Version 0.1.8 passes **60 automated tests** and JavaScript syntax checks. Tests cover parsing, token edge cases, grade planning, backup round-trips, batch downloads, session handling, popup persistence, survey flow, and notification cleanup.
 
 Browser APIs and network responses are simulated in these tests. Sanitized fixtures are derived from supplied portal tables. Live Firefox/Zen, authenticated portal downloads, and the current survey form still require verification; automated tests do not establish complete live compatibility.
 
@@ -140,3 +140,12 @@ Created by Sami, based on the original LMS Assignment Tracker, CMS Attendance Tr
 This is an unofficial student project and is not affiliated with or endorsed by Bahria University.
 
 Released under the [MIT License](LICENSE).
+
+
+## Attendance fix in 0.1.8
+
+Version 0.1.7 introduced overly strict Present Hours validation that rejected the CMS format `17.0 :70.83%`. A valid CMS login could therefore be reported as connected while no attendance rows were saved. Cached records could hide the problem until data was cleared or the extension was installed on another device.
+
+Version 0.1.8 accepts the actual hours-plus-percentage format, plain numeric hours, and hours:minutes. It reads the first number as attended hours and calculates the percentage from attended and total hours. An eight-course sanitized fixture from the supplied CMS source and an empty-storage sync test verify the fix. All 60 automated tests and JavaScript syntax checks pass; live Firefox/Zen verification remains necessary.
+
+After updating, reload the extension and click Refresh attendance while logged into CMS. Clearing local data again is unnecessary.

@@ -49,7 +49,7 @@ async function syncLms(){
 }
 async function syncCms(){
  const {doc}=await page(CMS);const records=parseAttendance(doc);
- if(!records.length)throw Error('Attendance table not found. Previous attendance has been kept.');
+ if(!records.length)throw Error('No readable attendance records found on CMS. Saved attendance has not been changed.');
  const attendance=records.map(r=>({...r,classesToRecover:Math.max(0,Math.ceil(3*r.total-4*r.attended)),sessionsLeft:Math.floor(r.absentLeft/3)}));
  await browser.storage.local.set({attendance,cmsSynced:Date.now()});return attendance.length;
 }
@@ -89,7 +89,7 @@ async function run(kind){
 }
 async function checkSessions(){
  for(const [portal,url] of [['lms',LMS],['cms',CMS]]){
- try{const {doc}=await page(url);const recognized=portal==='lms'?courseSelect(doc):[...doc.querySelectorAll('table')].some(t=>t.textContent.includes('Present Hours'));await status(portal,{state:recognized?'connected':'unknown',message:recognized?'Logged-in page available':'Page layout not recognized; open the portal to check.'});}
+ try{const {doc}=await page(url);const recognized=portal==='lms'?courseSelect(doc):[...doc.querySelectorAll('table')].some(t=>/presenthours/i.test(t.textContent.replace(/\s+/g,'')));await status(portal,{state:recognized?'connected':'unknown',message:recognized?'Logged-in page available':'Page layout not recognized; open the portal to check.'});}
  catch(e){await status(portal,{state:e.expired?'expired':'unavailable',message:e.message});}
  }
 }

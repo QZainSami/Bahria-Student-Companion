@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Bahria Student Companion",
-  "version": "0.1.8",
+  "version": "0.2.3",
   "author": "Sami",
   "description": "Assignments, attendance, lecture downloads, grade planning and session status for Bahria students.",
   "permissions": [
@@ -63,6 +63,7 @@
           "none"
         ]
       }
-    }
+    },
+    "gecko_android": {}
   }
 }

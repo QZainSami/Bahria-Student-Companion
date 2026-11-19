@@ -20,3 +20,21 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible { 
 html { scrollbar-color:#6272a4 #282a36; }
 
 body:not(.popup) #expand { display:none; }
+
+/* Firefox for Android: target the Android class rather than popup width.
+   Desktop browser popups can be narrow too, but must keep their desktop UI. */
+body.android,body.android.popup{min-width:0;width:100%;max-width:100vw}
+body.android header{padding:10px 12px}
+body.android .brand{gap:8px;font-size:19px}body.android .brand span{font-size:9px;letter-spacing:1px}
+body.android .hero{padding:2px 12px 8px}body.android .summary{font-size:10px}
+body.android nav{padding:0 12px 9px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+body.android nav::-webkit-scrollbar{display:none}body.android nav button{flex:0 0 auto;white-space:nowrap}
+body.android main{padding:10px 12px 14px}body.android .section-head{align-items:stretch;flex-direction:column;gap:7px}body.android .section-head .primary{width:100%}
+body.android #notice{padding-left:12px;padding-right:12px}body.android .grid{grid-template-columns:1fr;gap:8px}
+body.android .toolbar{gap:5px}body.android .toolbar select{flex:1 1 100%;width:100%}body.android .toolbar button{flex:1 1 auto}
+body.android .card{padding:9px}body.android .assignment-actions{align-items:flex-start}body.android .download-actions button{flex:1 1 auto}
+body.android .file{gap:7px;padding:8px}body.android .file button{padding:6px 8px}body.android .lecture-number{min-width:25px}
+body.android .metrics{gap:3px;padding:5px}body.android .metrics span{font-size:8px}body.android .metrics strong{font-size:9px}
+body.android table{min-width:500px}body.android .table-wrap{margin-left:-2px;margin-right:-2px}body.android .result{padding:10px}
+body.android footer{padding:9px 12px}body.android footer a{margin-left:8px}
+body.android #expand{display:none!important}

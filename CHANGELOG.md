@@ -1,3 +1,22 @@
+# Version 0.2.3
+
+- Fix the compact Android layout applying to narrow desktop Firefox/Zen action popups.
+- Apply mobile sizing only after Android is detected, preserving the normal desktop popup and full dashboard.
+
+# Version 0.1.10
+
+- Correct the Android manifest target for compatibility with Firefox's temporary add-on loader and AMO: use the documented empty `gecko_android` target.
+- Keep the Android compact popup UI and desktop-only full dashboard introduced in 0.1.9.
+- No code, permission, data, or network behavior changes from 0.1.9.
+
+# Version 0.1.9
+
+- Add Firefox for Android compatibility through the Android Gecko manifest target (Firefox Android 140+).
+- Use a compact, single-column mobile popup with scrollable section tabs and touch-friendly full-width actions.
+- Keep the full dashboard desktop-only: Android opens and stays in the compact extension interface.
+- Avoid the desktop window-focus API when opening CMS login on Android.
+- No new permissions, data collection, network endpoints, or background polling.
+
 # Version 0.1.8
 
 - Fix attendance disappearing after clearing local data or installing on another device.

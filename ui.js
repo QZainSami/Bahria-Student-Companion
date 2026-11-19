@@ -3,7 +3,14 @@ const node=(tag,text,cls)=>{const n=document.createElement(tag);if(text!=null)n.
 let snapshot={},plans=[],planId=null,activeTab='assignments';
 const selectedLectures=new Set();
 const selectionKey=f=>f.course+'|'+Core.fileIdentity(f.url);
+const isAndroid=typeof navigator!=='undefined'&&/Android/i.test(navigator.userAgent||'');
 if(location.pathname.endsWith('popup.html'))document.body.classList.add('popup');
+if(isAndroid){
+ document.body.classList.add('android');
+ // Android uses the compact action popup. A stale desktop-dashboard URL becomes that
+ // same compact view instead of opening a second, oversized extension page.
+ if(location.pathname.endsWith('dashboard.html')&&typeof location.replace==='function')location.replace(browser.runtime.getURL('popup.html'));
+}
 function tell(message){$('notice').textContent=message;}
 async function request(m){const r=await browser.runtime.sendMessage(m);if(!r?.ok)throw Error(r?.error||'The background task did not respond.');return r;}
 function empty(parent,text){parent.replaceChildren(node('div',text,'empty'));}
@@ -88,7 +95,11 @@ function renderStatus(){
 }
 document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
 document.querySelectorAll('[data-sync]').forEach(b=>b.onclick=async()=>{b.disabled=true;tell('Syncing in the background…');try{const r=await request({type:'sync',kind:b.dataset.sync});tell('Synced '+r.count+' records.');}catch(e){tell(e.message);}finally{await load();}});
-$('expand').onclick=()=>browser.tabs.create({url:browser.runtime.getURL('dashboard.html')});
+const expand=$('expand');
+if(expand){
+ if(isAndroid)expand.hidden=true;
+ else expand.onclick=()=>browser.tabs.create({url:browser.runtime.getURL('dashboard.html')});
+}
 $('file-course').onchange=()=>{renderFiles();saveView().catch(e=>tell(e.message));};
 async function startLectureBatch(files){
  if(!files.length)return tell('No lecture files selected for this course.');

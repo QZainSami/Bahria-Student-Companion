@@ -2,9 +2,16 @@
 
 A compact Firefox extension for Bahria University students: LMS assignments, CMS attendance, lecture downloads, grade planning, and survey autofill in one dashboard.
 
-**Version:** 0.1.8 · **Status:** Testing release · **License:** MIT
+**Version:** 0.2.3 · **Status:** Testing release · **License:** MIT
 
-Built for Firefox and Zen using Firefox engine **140 or newer**. This package does not support Chrome.
+Built for Firefox and Zen using Firefox engine **140 or newer**, including current Firefox for Android. This package does not support Chrome.
+
+## Firefox for Android
+
+- Android uses the same compact Companion popup; the separate full dashboard is intentionally desktop-only.
+- Course, lecture, attendance, grade-planning, session, and survey controls remain available in the popup. Section tabs scroll horizontally to preserve room on a phone screen.
+- Requested files are handed to Firefox/Android's normal download handling. The Android device must already be signed in to LMS and CMS in Firefox.
+- Install the signed release from the Mozilla Add-ons listing in Firefox for Android after AMO enables the Android-compatible version. The manifest explicitly enables Android support without adding an Android-only version restriction.
 
 ## Features
 
@@ -64,7 +71,7 @@ Stop prevents subsequent submissions; it cannot undo an answer already sent. The
 
 Separate extensions cannot read each other's storage. If an older tracker has no export feature, sync fresh data in Companion.
 
-## Install for testing
+## Install for testing (desktop Firefox or Zen)
 
 1. Download the release ZIP or this repository's source and extract it into a folder.
 2. In Firefox or Zen, open `about:debugging#/runtime/this-firefox`.
@@ -74,6 +81,14 @@ Separate extensions cannot read each other's storage. If an older tracker has no
 6. Open Companion, click **Sync all courses**, then **Scan lecture files**.
 
 Temporary installations are removed when the browser restarts. For a normal persistent installation, use a Mozilla-signed package or a published Mozilla Add-ons listing. Disable the older standalone trackers during testing if you want to avoid duplicate reminders.
+
+### Install on Firefox for Android
+
+1. Install the approved version from the extension's Mozilla Add-ons listing in Firefox for Android.
+2. Sign in to LMS and CMS in normal Firefox Android tabs.
+3. Open the Companion action popup and use **Sync all courses**, **Refresh attendance**, or **Scan lecture files**.
+
+Android does not use the desktop dashboard page. All controls are available in the compact popup instead.
 
 ## Update an existing temporary installation
 
@@ -127,7 +142,7 @@ Run the automated tests with Node.js:
 node --test tests/*.test.cjs
 ```
 
-Version 0.1.8 passes **60 automated tests** and JavaScript syntax checks. Tests cover parsing, token edge cases, grade planning, backup round-trips, batch downloads, session handling, popup persistence, survey flow, and notification cleanup.
+Version 0.2.3 passes **63 automated tests** and JavaScript syntax checks. Tests cover parsing, token edge cases, grade planning, backup round-trips, batch downloads, session handling, popup persistence, Android UI selection, survey flow, and notification cleanup.
 
 Browser APIs and network responses are simulated in these tests. Sanitized fixtures are derived from supplied portal tables. Live Firefox/Zen, authenticated portal downloads, and the current survey form still require verification; automated tests do not establish complete live compatibility.
 

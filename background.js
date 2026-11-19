@@ -109,7 +109,11 @@ async function reminders(){
 async function openCmsLogin(){
  const tabs=await browser.tabs.query({url:'https://cms.bahria.edu.pk/*'});
  const tab=tabs.find(t=>t.active)||tabs[0];
- if(tab){await browser.tabs.update(tab.id,{url:CMS,active:true});if(tab.windowId!=null)await browser.windows.update(tab.windowId,{focused:true});}
+ if(tab){
+  await browser.tabs.update(tab.id,{url:CMS,active:true});
+  // Firefox for Android has tabs but does not need a desktop-window focus request.
+  if(tab.windowId!=null&&browser.windows?.update)await browser.windows.update(tab.windowId,{focused:true});
+ }
  else await browser.tabs.create({url:CMS});
 }
 async function freshDownloadLink(file,cache){
